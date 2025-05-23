@@ -10,8 +10,8 @@ Original file is located at
 ! pip install datasets transformers nltk
 
 from transformers import (AutoModelForSeq2SeqLM,
-                            AutoTokenizer,
-                            T5Tokenizer)
+                          AutoTokenizer,
+                          T5Tokenizer)
 import torch
 import pandas as pd
 from datasets import Dataset, DatasetDict, load_dataset, load_from_disk
@@ -32,8 +32,8 @@ from google.colab import drive
 drive.mount('/content/drive', force_remount=True)
 
 output_dir = '/content/drive/MyDrive/'
-# Here you need to link this path in your Google drive to the place preseving your model weights, e.g., checkpoint-62500
-# You can download it on the github page
+# Link this path in your Google Drive to where your model weights are saved, e.g., checkpoint-62500
+# You can download it on the GitHub page
 
 model_checkpoint = "t5-large"
 prefix = "Transform the following sentence into Signal Temporal logic: "
@@ -43,50 +43,69 @@ max_target_length = 128
 tokenizer = AutoTokenizer.from_pretrained(model_checkpoint, model_max_length=max_input_length)
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-tl_model = AutoModelForSeq2SeqLM.from_pretrained(output_dir+"t5-large-navi-epoch20-trainpoint3").to(device)
+tl_model = AutoModelForSeq2SeqLM.from_pretrained(
+    output_dir + "t5-large-navi-epoch20-trainpoint3"
+).to(device)
 
 import time
 time_start = time.time()
 inputs = [prefix + 'At some point (prop_1), and at some point (prop_2), and always do not (prop_4).']
-inputs = tokenizer(inputs, max_length=max_input_length, truncation=True, return_tensors="pt").to(device)
+inputs = tokenizer(
+    inputs,
+    max_length=max_input_length,
+    truncation=True,
+    return_tensors="pt"
+).to(device)
 output = tl_model.generate(**inputs, num_beams=8, do_sample=True, max_length=max_target_length)
 decoded_output = tokenizer.batch_decode(output, skip_special_tokens=True)[0]
 print(decoded_output)
 time_end = time.time()
-print('Translation time: ', time_end-time_start)
+print('Translation time: ', time_end - time_start)
 
 # Here are the example test sentences
-test_sentence = ['Stay at (prop_1) for 5 units in the future and stay at (prop_2) for 5 units in the future, and ensure that never (prop_3).',
-                 'First (prop_1), and then (prop_2), and ensure that never (prop_3).',
-                 'Start by (prop_1). Then, (prop_2). Lastly, (prop_3).',
-                 'Guarantee that you (prop_1) and (prop_2)', # Input the natural sentence
-                 '( prop_1 ) and whenever ( prop_2 )',
-                 'Sooner or later (prop_1)',
-                 'Repeatedly (prop_1)',
-                 'At some point, (prop_1).',
-                 'Do prop_1 but not do prop_2',
-                 'Do prop_1, do prop_2, do prop_3'] # Input the natural sentence
+test_sentence = [
+    'Stay at (prop_1) for 5 units in the future and stay at (prop_2) for 5 units in the future, and ensure that never (prop_3).',
+    'First (prop_1), and then (prop_2), and ensure that never (prop_3).',
+    'Start by (prop_1). Then, (prop_2). Lastly, (prop_3).',
+    'Guarantee that you (prop_1) and (prop_2)',  # Input the natural sentence
+    '( prop_1 ) and whenever ( prop_2 )',
+    'Sooner or later (prop_1)',
+    'Repeatedly (prop_1)',
+    'At some point, (prop_1).',
+    'Do prop_1 but not do prop_2',
+    'Do prop_1, do prop_2, do prop_3'
+]
 
 for sentence in test_sentence:
-  inputs = [prefix + sentence]
-  inputs = tokenizer(inputs, max_length=max_input_length, truncation=True, return_tensors="pt").to(device)
-  output = tl_model.generate(**inputs, num_beams=8, do_sample=True, max_length=max_target_length)
-  decoded_output = tokenizer.batch_decode(output, skip_special_tokens=True)[0]
-  print('Input sentence: ', sentence)
-  print('Translated STL: ', decoded_output)
-  print('\n')
+    inputs = [prefix + sentence]
+    inputs = tokenizer(
+        inputs,
+        max_length=max_input_length,
+        truncation=True,
+        return_tensors="pt"
+    ).to(device)
+    output = tl_model.generate(**inputs, num_beams=8, do_sample=True, max_length=max_target_length)
+    decoded_output = tokenizer.batch_decode(output, skip_special_tokens=True)[0]
+    print('Input sentence: ', sentence)
+    print('Translated STL: ', decoded_output)
+    print('\n')
 
-# Here are the example test sentences
-test_sentence = ['At some time travel house or at some time go to apple and pick it'] # Input the natural sentence
-#test_sentence = ['whenever stop by house or at some time make to flag.','At some time approach trash can or whenever got to house.','Whenever travel house or at any time go to flag.']
+# Here are additional example test sentences
+test_sentence = ['At some time travel house or at some time go to apple and pick it']  # Input the natural sentence
+
 for sentence in test_sentence:
-  inputs = [prefix + sentence]
-  inputs = tokenizer(inputs, max_length=max_input_length, truncation=True, return_tensors="pt").to(device)
-  output = tl_model.generate(**inputs, num_beams=8, do_sample=True, max_length=max_target_length)
-  decoded_output = tokenizer.batch_decode(output, skip_special_tokens=True)[0]
-  print('Input sentence: ', sentence)
-  print('Translated STL: ', decoded_output)
-  print('\n')
+    inputs = [prefix + sentence]
+    inputs = tokenizer(
+        inputs,
+        max_length=max_input_length,
+        truncation=True,
+        return_tensors="pt"
+    ).to(device)
+    output = tl_model.generate(**inputs, num_beams=8, do_sample=True, max_length=max_target_length)
+    decoded_output = tokenizer.batch_decode(output, skip_special_tokens=True)[0]
+    print('Input sentence: ', sentence)
+    print('Translated STL: ', decoded_output)
+    print('\n')
 
 !pip install openai==0.28
 
@@ -95,17 +114,18 @@ from pyparsing import (
     infixNotation, opAssoc, Keyword, ParserElement, ParseException,
     Regex, Suppress, Optional, Group, Word, nums, OneOrMore, Combine
 )
+
 OPENAI_API_KEY = "Your-API-KEY"
 openai.api_key = OPENAI_API_KEY
-# 启用 packrat 加速解析
+# Enable packrat acceleration for parsing
 ParserElement.enablePackrat()
 
-# 定义区间表达式，例如 [0,5]
+# Define interval expressions, e.g., [0,5]
 interval = Group(
     Suppress("[") + Word(nums)("start") + Suppress(",") + Word(nums)("end") + Suppress("]")
 )
 
-# 定义保留词（操作符）
+# Define keywords (operators)
 imply_kw    = Keyword("imply")
 equal_kw    = Keyword("equal")
 and_kw      = Keyword("and")
@@ -115,7 +135,7 @@ globally_kw = Keyword("globally")
 until_kw    = Keyword("until")
 negation_kw = Keyword("negation")
 
-# 辅助函数：整合带可选区间的操作符
+# Helper function: flatten operator with optional interval
 def flatten_operator(tokens):
     op = tokens[0]
     if len(tokens) > 1 and tokens[1]:
@@ -124,24 +144,24 @@ def flatten_operator(tokens):
     else:
         return op
 
-# 定义 temporal 操作符支持可选区间
+# Define temporal operators with optional intervals
 globally_temporal = (globally_kw + Optional(interval)).setParseAction(flatten_operator)
 finally_temporal  = (finally_kw + Optional(interval)).setParseAction(flatten_operator)
 until_temporal    = (until_kw + Optional(interval)).setParseAction(flatten_operator)
 
-# 其他操作符直接用
-imply_op = imply_kw
-equal_op = equal_kw
-and_op   = and_kw
-or_op    = or_kw
-negation_op = negation_kw
+# Define other operators directly
+imply_op     = imply_kw
+equal_op     = equal_kw
+and_op       = and_kw
+or_op        = or_kw
+negation_op  = negation_kw
 
-# 定义 AP (原子命题)
+# Define AP (atomic propositions)
 AP = Regex(
     r"(?!^(?:imply|equal|and|or|finally|globally|until|negation)$)[A-Za-z0-9_ ]+"
 ).setName("AP").addParseAction(lambda t: t[0].strip())
 
-# 构造表达式：采用 infixNotation 定义一元和二元运算符
+# Construct expression: use infixNotation to define unary and binary operators
 expr = infixNotation(
     AP,
     [
@@ -183,7 +203,7 @@ def check_tree(tree):
         return False
     return False
 
-# 验证 STL 表达式函数：返回 (True, "") 或 (False, error_message)
+# Validate STL expression function: returns (True, "") or (False, error_message)
 def validate_stl(stl_expression):
     try:
         result = expr.parseString(stl_expression, parseAll=True)
@@ -195,9 +215,9 @@ def validate_stl(stl_expression):
     except ParseException as pe:
         return (False, str(pe))
 
-# 自动修正 STL 的函数，包含正式规则说明（在 prompt 中传递）
+# Auto-correct STL function, includes formal rule descriptions (passed in the prompt)
 def auto_correct_stl(nl, stl, error_message):
-    # 这里你可以在 prompt 中附加详细的正式规则说明
+    # Here you can include detailed formal rule descriptions in the prompt
     formal_rules = (
         "正式规则：\n"
         "1. 每个二元操作符必须有两个操作数，并且左右操作数必须用括号包围。\n"
@@ -228,64 +248,33 @@ def auto_correct_stl(nl, stl, error_message):
         print("OpenAI API error:", e)
         return stl
 
-# ===============================
-# 流程集成：在模型翻译前先进行共指消解，然后翻译 STL，再检测 STL 是否符合正式规则，
-# 如有错误则调用 LLM 自动修正
-# ===============================
-
-def contains_pronoun(sentence):
-    tokens = sentence.lower().split()
-    return any(p in tokens for p in ("it", "them"))
-
-def resolve_coreference(nl_sentence):
-    prompt = (
-        f"请将下面句子中的代词（例如 'it', 'them' 等）替换为它们所指代的具体名词短语，消除共指：\n"
-        f"{nl_sentence}\n"
-        "请仅输出处理后的句子，不附带其他说明。"
-    )
-    try:
-        response = openai.ChatCompletion.create(
-            model='o3-mini',
-            messages=[
-                {"role": "system", "content": "你是一个处理共指问题的语言学专家。"},
-                {"role": "user", "content": prompt}
-            ],
-            reasoning_effort='high'
-        )
-        return response.choices[0].message['content'].strip()
-    except Exception as e:
-        print("OpenAI API error during coreference resolution:", e)
-        return nl_sentence
-
-# API_MODE 控制是否总调用自动修正模块（"always" 或 "only_if_error"）
+# API_MODE controls whether to always call the auto-correction module ("always" or "only_if_error")
 API_MODE = "only_if_error"
 
-# 假定以下变量已定义：prefix, tokenizer, tl_model, max_input_length, max_target_length, device
-# 下面是集成调用示例：
-#test_sentence = ['whenever stop by house or at some time make to flag.','At some time approach trash can or whenever got to house.','Whenever travel house or at any time go to flag.']
-#test_sentence = ['whenever stop by house, make to flag.']
+# Assume the following variables are defined: prefix, tokenizer, tl_model, max_input_length, max_target_length, device
+# Below is an example of the integrated invocation:
 test_sentence = ['At some time travel house or at some time go to apple and pick it']
 for sentence in test_sentence:
-    # 共指检测与消解
+    # Coreference detection and resolution
     if contains_pronoun(sentence):
         resolved_sentence = resolve_coreference(sentence)
-        sentence = resolved_sentence  # 用消解后的句子
+        sentence = resolved_sentence
         print("Coreference resolved sentence:", sentence)
 
-    # 翻译部分（注意：确保 prefix、tokenizer、tl_model、device 等变量已定义）
+    # Translation step (ensure prefix, tokenizer, tl_model, device are defined)
     inputs = [prefix + sentence]
     inputs = tokenizer(inputs, max_length=max_input_length, truncation=True, return_tensors="pt").to(device)
     output = tl_model.generate(**inputs, num_beams=8, do_sample=True, max_length=max_target_length)
     decoded_output = tokenizer.batch_decode(output, skip_special_tokens=True)[0]
 
-    # STL 验证
+    # STL validation
     valid, error_message = validate_stl(decoded_output)
     if API_MODE == "always" or (API_MODE == "only_if_error" and not valid):
         final_stl = auto_correct_stl(sentence, decoded_output, error_message)
     else:
         final_stl = decoded_output
 
-    # 简洁输出
+    # Concise output
     print("Input sentence: ", sentence)
     print("Translated STL: ", decoded_output)
     print("Final STL: ", final_stl)
